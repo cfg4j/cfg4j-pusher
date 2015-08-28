@@ -15,8 +15,6 @@
  */
 package org.cfg4j.sample;
 
-import org.cfg4j.provider.ConfigurationProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -28,26 +26,10 @@ import org.springframework.stereotype.Controller;
 @ComponentScan
 public class MainController implements CommandLineRunner {
 
-  @Autowired
-  private ConfigurationProvider configurationProvider;
-
   public void run(String... args) throws Exception {
-    Boolean wasAwake = false;
 
-    ReksioConfig reksioConfig = configurationProvider.bind("reksio", ReksioConfig.class);
-
-    while (true) {
-      if (wasAwake != reksioConfig.awake()) {
-        System.out.println("Reksio is now " + (reksioConfig.awake() ? "awake" : "asleep"));
-
-        wasAwake = reksioConfig.awake();
-      }
-
-      Thread.sleep(3000);
-    }
   }
 
-  // For Spring Boot
   public static void main(String[] args) throws Exception {
     SpringApplication.run(MainController.class, args);
   }
