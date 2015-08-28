@@ -15,6 +15,8 @@
  */
 package org.cfg4j.sample;
 
+import com.orbitz.consul.Consul;
+import com.orbitz.consul.KeyValueClient;
 import org.cfg4j.source.context.propertiesprovider.PropertiesProvider;
 import org.cfg4j.source.context.propertiesprovider.PropertiesProviderSelector;
 import org.cfg4j.source.context.propertiesprovider.PropertyBasedPropertiesProvider;
@@ -37,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
 import java.util.Properties;
 
 @Controller
@@ -49,7 +52,24 @@ public class MainController implements CommandLineRunner {
   @Value("${configPath}")
   private String configPath;
 
+  @Value("${globalPrefix}")
+  private String globalPrefix;
+
+  @Value("${consul.host}")
+  private String host;
+
+  @Value("${consul.port}")
+  private int port;
+
+  private KeyValueClient kvClient;
+  private Map<String, String> consulValues;
+
   public void run(String... args) throws Exception {
+
+    LOG.info("Connecting to Consul client at " + host + ":" + port);
+
+    Consul consul = Consul.newClient(host, port);
+    kvClient = consul.keyValueClient();
 
     PropertiesProviderSelector propertiesProviderSelector = new PropertiesProviderSelector(
         new PropertyBasedPropertiesProvider(), new YamlBasedPropertiesProvider()
@@ -68,6 +88,12 @@ public class MainController implements CommandLineRunner {
             Properties properties = new Properties();
             PropertiesProvider provider = propertiesProviderSelector.getProvider(file.getFileName().toString());
             properties.putAll(provider.getProperties(input));
+
+            String prefix = start.relativize(file.getParent()).toString();
+
+            for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+              kvClient.putValue(globalPrefix + "/" + prefix + "/" + prop.getKey().toString(), prop.getValue().toString());
+            }
 
           } catch (IOException e) {
             throw new IllegalStateException("Unable to load properties from file: " + file, e);

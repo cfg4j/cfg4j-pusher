@@ -60,6 +60,10 @@ dependencies {
     compile group: "org.cfg4j", name: "cfg4j-core", version: "${cfg4jVersion}"
     compile group: "org.cfg4j", name: "cfg4j-git", version: "${cfg4jVersion}"
 
+    compile group: "com.orbitz.consul", name: "consul-client", version: "0.9.8"
+    compile group: "org.apache.cxf", name: "cxf-rt-rs-client", version: "3.1.2"
+    compile group: "org.apache.cxf", name: "cxf-rt-transports-http-hc", version: "3.1.2"
+
     testCompile group: "junit", name: "junit", version: "4.12"
     testCompile group: "org.assertj", name: "assertj-core", version: "3.1.0"
     testCompile group: "org.mockito", name: "mockito-core", version: "1.10.19"
