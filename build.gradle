@@ -1,0 +1,104 @@
+/*
+ * Copyright 2015 Norbert Potocki (norbert.potocki@nort.pl)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+// ----------- Build script configuration -----------
+
+buildscript {
+
+    ext {
+        artifactGroup = "org.cfg4j"
+        artifactName = "cfg4j-pusher"
+        artifactVersion = "1.0.0-SNAPSHOT"
+
+        springBootVersion = "1.2.4.RELEASE"
+        cfg4jVersion = "4.0.2"
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        classpath group: "com.github.ben-manes", name: "gradle-versions-plugin", version: "0.11.3"
+    }
+}
+
+// ----------- Plugins -----------
+apply plugin: "java"
+apply plugin: "idea"
+apply plugin: "jacoco"
+apply plugin: "com.github.ben-manes.versions"
+
+// ----------- Repositories -----------
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+// ----------- External module dependencies -----------
+dependencies {
+
+    // Logging
+    compile group: "org.slf4j", name: "slf4j-api", version: "1.7.12"
+
+    compile group: "org.springframework.boot", name: "spring-boot-starter", version: "${springBootVersion}"
+
+    compile group: "org.cfg4j", name: "cfg4j-core", version: "${cfg4jVersion}"
+    compile group: "org.cfg4j", name: "cfg4j-git", version: "${cfg4jVersion}"
+
+    testCompile group: "junit", name: "junit", version: "4.12"
+    testCompile group: "org.assertj", name: "assertj-core", version: "3.1.0"
+    testCompile group: "org.mockito", name: "mockito-core", version: "1.10.19"
+}
+
+// ----------- EXTRA tasks -----------
+
+// Generate Gradle wrapper
+task wrapper(type: Wrapper) {
+    gradleVersion = "2.4"
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+// ----------- Task configurations -----------
+defaultTasks "clean", "build"
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        html.enabled false
+    }
+}
+
+// ----------- Task configurations -----------
+jar {
+    baseName = "${artifactName}"
+    version = "${artifactVersion}"
+}
