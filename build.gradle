@@ -33,12 +33,14 @@ buildscript {
     }
 
     dependencies {
+        classpath group: "org.springframework.boot", name: "spring-boot-gradle-plugin", version: "${springBootVersion}"
         classpath group: "com.github.ben-manes", name: "gradle-versions-plugin", version: "0.11.3"
     }
 }
 
 // ----------- Plugins -----------
 apply plugin: "java"
+apply plugin: "spring-boot"
 apply plugin: "idea"
 apply plugin: "jacoco"
 apply plugin: "com.github.ben-manes.versions"
