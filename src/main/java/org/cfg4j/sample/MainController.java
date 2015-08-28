@@ -37,8 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 @Controller
@@ -53,7 +51,9 @@ public class MainController implements CommandLineRunner {
 
   public void run(String... args) throws Exception {
 
-    List<Path> configFiles = new LinkedList<>();
+    PropertiesProviderSelector propertiesProviderSelector = new PropertiesProviderSelector(
+        new PropertyBasedPropertiesProvider(), new YamlBasedPropertiesProvider()
+    );
 
     Path start = Paths.get(configPath);
     Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
@@ -61,32 +61,22 @@ public class MainController implements CommandLineRunner {
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 
         if (file.toString().endsWith(".yaml") || file.toString().endsWith("properties")) {
-          LOG.info("found config file: " + file.toAbsolutePath().toString());
-          configFiles.add(file);
+          LOG.info("found config file: " + file.getFileName().toString() + " in context " + start.relativize(file.getParent()).toString());
+
+          try (InputStream input = new FileInputStream(file.toFile())) {
+
+            Properties properties = new Properties();
+            PropertiesProvider provider = propertiesProviderSelector.getProvider(file.getFileName().toString());
+            properties.putAll(provider.getProperties(input));
+
+          } catch (IOException e) {
+            throw new IllegalStateException("Unable to load properties from file: " + file, e);
+          }
         }
 
         return FileVisitResult.CONTINUE;
       }
     });
-
-    PropertiesProviderSelector propertiesProviderSelector = new PropertiesProviderSelector(
-        new PropertyBasedPropertiesProvider(), new YamlBasedPropertiesProvider()
-    );
-
-    Properties properties = new Properties();
-
-    for (Path path : configFiles) {
-      try (InputStream input = new FileInputStream(path.toFile())) {
-
-        PropertiesProvider provider = propertiesProviderSelector.getProvider(path.getFileName().toString());
-        properties.putAll(provider.getProperties(input));
-
-      } catch (IOException e) {
-        throw new IllegalStateException("Unable to load properties from file: " + path, e);
-      }
-    }
-
-    System.out.println(properties);
   }
 
   public static void main(String[] args) throws Exception {
